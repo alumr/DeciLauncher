@@ -80,7 +80,7 @@
 
     <ItemGroup>
         <!-- 裁剪器根程序集：保留反射路径所需的程序集 -->
-        <TrimmerRootAssembly Include="DeciLauncher" />
+        <TrimmerRootAssembly Include="Deci Launcher" />
         <TrimmerRootAssembly Include="MinecraftLaunch" />
         <TrimmerRootAssembly Include="MinecraftLaunch.Base" />
     </ItemGroup>
