@@ -8,55 +8,42 @@ on:
 
 jobs:
   frontend:
-    name: Frontend (Vue + TypeScript)
+    name: Frontend
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: UserInterface
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
           version: latest
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
           cache-dependency-path: UserInterface/pnpm-lock.yaml
-
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wwwroot
+          path: Resources/wwwroot
 
   backend:
-    name: Backend (.NET ${{ matrix.os }})
+    name: Backend (${{ matrix.os }})
+    needs: frontend
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/download-artifact@v4
         with:
-          version: latest
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: UserInterface/pnpm-lock.yaml
-
-      - name: Build frontend
-        run: |
-          cd UserInterface
-          pnpm install --frozen-lockfile
-          pnpm build
-
+          name: wwwroot
+          path: Resources/wwwroot
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
-
-      - name: Build backend
-        run: dotnet build -c Release
+      - run: dotnet build -c Release
