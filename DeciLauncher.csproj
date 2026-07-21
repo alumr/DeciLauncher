@@ -1,0 +1,88 @@
+﻿<!--
+  Deci Launcher 项目配置
+  目标框架：.NET 10.0
+  输出类型：WinExe（生产模式）/ Exe（Debug 模式）
+  支持平台：win-x64, win-arm64, linux-x64, linux-arm64, osx-x64, osx-arm64
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- 输出类型：WinExe 避免 Windows 上弹出控制台窗口 -->
+        <OutputType>WinExe</OutputType>
+        <!-- 目标框架版本 -->
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- 支持任意 CPU 架构 -->
+        <Platforms>AnyCPU</Platforms>
+        <!-- 启用 Per-Monitor DPI 感知（暂用 V1 避免恢复后自动缩放） -->
+        <ApplicationDpiAwareness>PerMonitor</ApplicationDpiAwareness>
+        <!-- 启用全局隐式 using（自动引用常用命名空间） -->
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- 启用可空引用类型检查 -->
+        <Nullable>enable</Nullable>
+        <!-- 使用默认语言版本（.NET 10 默认对应 C# 14） -->
+        <LangVersion>default</LangVersion>
+        <!-- 生成嵌入式文件清单（用于从程序集中提供静态资源） -->
+        <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+        <!-- 发布为单文件应用（含自解压，原生 DLL 打包进 exe） -->
+        <PublishSingleFile>true</PublishSingleFile>
+        <!-- 原生库嵌入自解压包（消除外部 .dll 文件） -->
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <!-- 自包含发布：运行时内嵌，无需用户安装 .NET 运行时 -->
+        <SelfContained>true</SelfContained>
+        <!-- 启用 IL 裁剪：移除未使用的代码路径，减小发布包体积 -->
+        <PublishTrimmed>true</PublishTrimmed>
+        <!-- 关闭托管侧调试符号生成 -->
+        <DebugType>none</DebugType>
+        <!-- 抑制 JsonSerializer 匿名类型裁剪警告（均已通过 TrimmerRootAssembly 保留） -->
+        <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+        <!-- 支持的运行时标识符列表（用于多平台发布） -->
+        <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+        <!-- 应用版本号 -->
+        <Version>0.1.0-beta.1</Version>
+        <!-- 程序名称 -->
+        <Title>Deci Launcher</Title>
+        <AssemblyName>Deci Launcher</AssemblyName>
+        <!-- 产品名称 -->
+        <Product>Deci Launcher</Product>
+        <!-- 开发公司 -->
+        <Company>Decibyte</Company>
+        <!-- 作者署名 -->
+        <Authors>Tristan Jen</Authors>
+        <!-- 版权声明 -->
+        <Copyright>Decibyte © 2026</Copyright>
+        <!-- 应用描述 -->
+        <Description>A cross-platform Minecraft Launcher.</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 从程序集内嵌资源中提供静态文件（Photino 内嵌静态文件服务器依赖） -->
+        <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.10" />
+        <!-- 控制台日志记录（仅 DEBUG 模式启用） -->
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.10" />
+        <!-- Minecraft 启动核心库（Mojang 账户认证 + 版本安装 + 启动） -->
+        <PackageReference Include="MinecraftLaunch" Version="4.0.7" />
+        <!-- Photino 桌面窗口框架（WebView2 / WebKit 跨平台封装） -->
+        <PackageReference Include="Photino.NET" Version="4.0.16" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- ASP.NET Core 共享框架（内嵌文件服务器依赖 Kestrel） -->
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!--
+          将 v17 输出目录下的所有文件作为嵌入式资源
+          Vite 构建输出到 Resources/wwwroot/，此处作为内嵌资源提供静态文件服务
+        -->
+        <EmbeddedResource Include="Resources\wwwroot\**" LinkBase="Resources\wwwroot"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- 裁剪器根程序集：保留反射路径所需的程序集 -->
+        <TrimmerRootAssembly Include="DeciLauncher" />
+        <TrimmerRootAssembly Include="MinecraftLaunch" />
+        <TrimmerRootAssembly Include="MinecraftLaunch.Base" />
+    </ItemGroup>
+
+</Project>

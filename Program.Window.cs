@@ -1,0 +1,238 @@
+// 窗口尺寸和位置坐标类型
+using System.Drawing;
+// JSON 反序列化（解析前端发送的消息）
+using System.Text.Json;
+// Photino 桌面窗口框架
+using Photino.NET;
+
+namespace DeciLauncher;
+
+partial class Program
+{
+    // ===== 拖拽状态 =====
+    // 窗口 X 坐标追踪（用于 macOS/Linux 手动拖拽）
+    private static double DragX = 0, DragY = 0;
+    // 窗口初始化完成标记（防止 LocationChanged 在构造期间触发 resize）
+    private static bool WindowReady = false;
+    // 正在缩放标记（防止 SetSize 触发的 LocationChanged 形成递归重入）
+    private static bool IsResizing = false;
+
+    /// <summary>
+    /// 构建并配置 Photino 窗口（chromeless、无边框、DPI 自适应）
+    /// </summary>
+    private static PhotinoWindow BuildWindow(string appUrl, float scale)
+    {
+        var (width, height) = GetScaledSize(scale);
+
+        var window = new PhotinoWindow()
+            // 设置窗口标题
+            .SetTitle("Deci Launcher")
+            // 不使用操作系统默认位置
+            .SetUseOsDefaultLocation(false)
+            // 不使用操作系统默认尺寸
+            .SetUseOsDefaultSize(false)
+            // 设置窗口大小（DPI 缩放后）
+            .SetSize(new Size(width, height))
+            // 限制窗口最大宽度
+            .SetMaxWidth(width)
+            // 限制窗口最大高度
+            .SetMaxHeight(height)
+            // 窗口居中显示
+            .Center()
+            // 禁止用户手动调整窗口大小
+            .SetResizable(false)
+            // 禁止窗口最大化
+            .SetMaximized(false)
+            // 启用无边框模式（chromeless：隐藏 OS 原生标题栏）
+            .SetChromeless(true)
+            // 启用窗口透明背景
+            .SetTransparent(true)
+            // ===== 禁用不需要的 WebView2 功能以降低内存占用 =====
+            // 禁用右键上下文菜单
+            .SetContextMenuEnabled(false)
+            // 禁用开发者工具（F12）
+            .SetDevToolsEnabled(false)
+            // 禁用通知 API
+            .SetNotificationsEnabled(false)
+            // 禁用摄像头/麦克风媒体流
+            .SetMediaStreamEnabled(false)
+            // 禁用媒体自动播放
+            .SetMediaAutoplayEnabled(false)
+            // 禁用 JavaScript 剪贴板访问
+            .SetJavascriptClipboardAccessEnabled(false)
+            // 禁用文件系统访问 API
+            .SetFileSystemAccessEnabled(false)
+            // 禁用全屏模式
+            .SetFullScreen(false)
+            // 锁定 WebView2 devicePixelRatio 为初始值，阻止跨显示器自动缩放
+            .SetBrowserControlInitParameters($"--force-device-scale-factor={scale.ToString(System.Globalization.CultureInfo.InvariantCulture)}")
+            // ===== 注册窗口事件处理器 =====
+            // 窗口创建完成后设置就绪标记
+            .RegisterWindowCreatedHandler((sender, args) =>
+            {
+                // Windows：补全系统菜单和最小化样式，启用任务栏点击最小化/恢复
+                if (OperatingSystem.IsWindows())
+                {
+                    var hWnd = ((PhotinoWindow)sender!).WindowHandle;
+                    var style = GetWindowLongPtr(hWnd, GWL_STYLE);
+                    SetWindowLongPtr(hWnd, GWL_STYLE, style | (nint)(WS_SYSMENU | WS_MINIMIZEBOX));
+                    SetWindowPos(hWnd, 0, 0, 0, 0, 0,
+                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                }
+                ((PhotinoWindow)sender!).Invoke(() => WindowReady = true);
+            })
+            // 前端 Web 消息接收处理器
+            .RegisterWebMessageReceivedHandler((object? sender, string message) =>
+            {
+                var window = (PhotinoWindow)sender!;
+
+                try
+                {
+                    // 解析 JSON 消息
+                    using var json = JsonDocument.Parse(message);
+                    var root = json.RootElement;
+                    // 读取消息类型字段
+                    var type = root.GetProperty("type").GetString();
+
+                    // ---- 拖拽开始 ----
+                    if (type == "drag-start")
+                    {
+                        // Windows：使用原生系统拖拽（零延迟）
+                        if (OperatingSystem.IsWindows())
+                        {
+                            // 获取原生窗口句柄
+                            var hWnd = window.WindowHandle;
+                            // 释放鼠标捕获
+                            ReleaseCapture();
+                            // 向窗口发送标题栏拖拽消息，触发系统级窗口移动
+                            SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+                        }
+                        else
+                        {
+                            // macOS/Linux：记录窗口当前位置用于手动拖拽追踪
+                            var pos = window.Location;
+                            DragX = pos.X;
+                            DragY = pos.Y;
+                        }
+                        return;
+                    }
+
+                    // ---- 拖拽中 ----
+                    if (type == "drag")
+                    {
+                        // Windows 下原生拖拽由系统处理，忽略前端增量消息
+                        if (OperatingSystem.IsWindows())
+                            return;
+
+                        // 读取鼠标位移增量
+                        int dx = root.GetProperty("dx").GetInt32();
+                        int dy = root.GetProperty("dy").GetInt32();
+                        // 累加到窗口追踪位置
+                        DragX += dx;
+                        DragY += dy;
+                        // 移动窗口到新位置（允许跨显示器）
+                        window.MoveTo((int)Math.Round(DragX), (int)Math.Round(DragY), true);
+                        return;
+                    }
+
+                    // ---- 关闭窗口 ----
+                    if (type == "close")
+                    {
+                        window.Close();
+                        return;
+                    }
+
+                    // ---- 最小化窗口 ----
+                    if (type == "minimize")
+                    {
+                        window.SetMinimized(true);
+                        return;
+                    }
+
+                    // ---- 扫描本机 Java 运行时 ----
+                    if (type == "scan-java")
+                    {
+                        _ = ScanJavaAsync(window);
+                        return;
+                    }
+
+                    // ---- 扫描 .minecraft 目录下的游戏版本 ----
+                    if (type == "scan-games")
+                    {
+                        var gamePath = root.TryGetProperty("path", out var p) ? p.GetString() ?? "" : "";
+                        if (string.IsNullOrEmpty(gamePath))
+                            gamePath = Path.Combine(AppContext.BaseDirectory, ".minecraft");
+                        ScanGames(window, gamePath);
+                        return;
+                    }
+
+                    // ---- 打开文件夹选择器选择游戏来源目录 ----
+                    if (type == "pick-game-path")
+                    {
+                        PickGamePathAsync(window);
+                        return;
+                    }
+
+                    // ---- 创建离线账户 ----
+                    if (type == "create-offline-account")
+                    {
+                        var name = root.TryGetProperty("name", out var an) ? an.GetString() ?? "" : "";
+                        if (!string.IsNullOrEmpty(name))
+                            CreateOfflineAccount(window, name);
+                        return;
+                    }
+
+                    // ---- 获取账户列表 ----
+                    if (type == "list-accounts")
+                    {
+                        SendAccountList(window);
+                        return;
+                    }
+
+                    // ---- 删除账户 ----
+                    if (type == "delete-offline-account")
+                    {
+                        var deleteUuid = root.TryGetProperty("uuid", out var du) ? du.GetString() : null;
+                        if (!string.IsNullOrEmpty(deleteUuid))
+                            DeleteAccount(window, deleteUuid);
+                        return;
+                    }
+
+                    // ---- 启动游戏 ----
+                    if (type == "launch-game")
+                    {
+                        var gameId = root.TryGetProperty("gameId", out var gi) ? gi.GetString() ?? "" : "";
+                        var accountUuid = root.TryGetProperty("accountUuid", out var au) ? au.GetString() ?? "" : "";
+                        var javaPath = root.TryGetProperty("javaPath", out var jp) ? jp.GetString() ?? "" : "";
+                        var maxMemory = root.TryGetProperty("maxMemory", out var mm) ? mm.GetInt32() : 2048;
+                        var minecraftPath = root.TryGetProperty("minecraftPath", out var mp) ? mp.GetString() ?? "" : "";
+                        if (!string.IsNullOrEmpty(gameId) && !string.IsNullOrEmpty(accountUuid))
+                            LaunchGame(window, gameId, accountUuid, javaPath, maxMemory, minecraftPath);
+                        return;
+                    }
+
+                    // ---- 关闭游戏 ----
+                    if (type == "close-game")
+                    {
+                        CloseGame(window);
+                        return;
+                    }
+
+                    // ---- 取消启动 ----
+                    if (type == "cancel-launch")
+                    {
+                        CancelLaunch(window);
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Window] 消息解析失败: {ex.Message}");
+                }
+            })
+            // 加载前端页面（load WebView2 content）
+            .Load(appUrl);
+
+        return window;
+    }
+}

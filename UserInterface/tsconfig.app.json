@@ -1,0 +1,23 @@
+// TypeScript 项目配置（应用代码）
+// 继承 Vue 官方推荐的 TS 配置基准（DOM 类型 + Vue 支持）
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    // 启用严格模式（包含 strictNullChecks, strictBindCallApply 等）
+    "strict": true,
+    // 报告未使用的局部变量为错误
+    "noUnusedLocals": true,
+    // 报告未使用的函数参数为错误
+    "noUnusedParameters": true,
+    // 仅允许可擦除的语法（禁止命名空间、枚举等运行时实体）
+    "erasableSyntaxOnly": true
+  },
+  "include": [
+    // 包含 src 下的 TypeScript 文件
+    "src/**/*.ts",
+    // 包含 src 下的 TSX 文件（虽然项目当前无 JSX 文件）
+    "src/**/*.tsx",
+    // 包含 src 下的 Vue SFC 文件
+    "src/**/*.vue"
+  ]
+}

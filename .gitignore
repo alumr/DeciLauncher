@@ -1,0 +1,28 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+.vscode/
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Build output (frontend builds into Resources/wwwroot)
+Resources/wwwroot/
+!Resources/wwwroot/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Publish
+Release/
+
+# Vite cache
+UserInterface/vite.config.ts.timestamp-*.mjs
+
+# TypeScript build info
+UserInterface/*.tsbuildinfo
