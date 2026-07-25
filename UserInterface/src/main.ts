@@ -32,6 +32,13 @@ document.addEventListener('keydown', (e: KeyboardEvent) => {
   }
 })
 
+// 禁用 Ctrl+滚轮 缩放（浏览器默认行为）
+document.addEventListener('wheel', (e: WheelEvent) => {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault()
+  }
+}, { passive: false })
+
 // 禁用鼠标右键菜单
 document.addEventListener('contextmenu', (e: MouseEvent) => {
   e.preventDefault()
