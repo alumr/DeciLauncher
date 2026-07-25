@@ -52,35 +52,6 @@ dotnet build
 dotnet publish -c Release -r win-x64
 ```
 
-### Publish Script
-
-```bash
-# Build for all platforms and create ZIP archives
-.\publish.ps1 -Version 0.1.0-beta.1
-```
-
-## Project Structure
-
-```
-DeciLauncher/
-├── Program.cs                # Entry point, Kestrel embedded file server
-├── Program.Accounts.cs       # Offline account CRUD + persistence
-├── Program.Games.cs          # .minecraft version scanning
-├── Program.Java.cs           # System Java runtime detection
-├── Program.Launch.cs         # Game launch orchestration
-├── Program.Window.cs         # Photino window + message handlers
-├── Program.Dpi.cs            # Cross-platform DPI scaling
-├── Program.Native.cs         # Win32/macOS P/Invoke
-├── publish.ps1               # Multi-platform publish script
-├── Resources/wwwroot/        # Vite frontend build output (embedded)
-└── UserInterface/            # Vue 3 + TypeScript frontend source
-    └── src/
-        ├── components/       # UI components (TitleBar, Dropdown, etc.)
-        ├── stores/           # Reactive state (games, accounts, java, launch)
-        ├── views/            # Page views (Home, Games, Accounts, Settings)
-        └── router/           # Vue Router config
-```
-
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE)
+[GPL-3.0](LICENSE)
