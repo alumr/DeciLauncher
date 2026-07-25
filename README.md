@@ -52,6 +52,20 @@ dotnet build
 dotnet publish -c Release -r win-x64
 ```
 
+## Used Open Source Projects
+
+| Project | Purpose | License |
+|---------|---------|---------|
+| [.NET](https://github.com/dotnet/runtime) | Runtime & SDK | MIT |
+| [ASP.NET Core](https://github.com/dotnet/aspnetcore) | Embedded file server | MIT |
+| [Photino.NET](https://github.com/tryphotino/photino.NET) | Desktop windowing | Apache-2.0 |
+| [MinecraftLaunch](https://github.com/BlessedChild-333/MinecraftLaunch) | Minecraft launch core | MIT |
+| [Vue](https://github.com/vuejs/core) | Frontend framework | MIT |
+| [Vite](https://github.com/vitejs/vite) | Frontend build tool | MIT |
+| [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | CSS framework | MIT |
+| [TypeScript](https://github.com/microsoft/TypeScript) | Typed JavaScript | Apache-2.0 |
+| [pnpm](https://github.com/pnpm/pnpm) | Package manager | MIT |
+
 ## License
 
 [GPL-3.0](LICENSE)

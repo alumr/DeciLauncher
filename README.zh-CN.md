@@ -52,6 +52,20 @@ dotnet build
 dotnet publish -c Release -r win-x64
 ```
 
+## 使用的开源项目
+
+| 项目 | 用途 | 许可证 |
+|------|------|--------|
+| [.NET](https://github.com/dotnet/runtime) | 运行时和 SDK | MIT |
+| [ASP.NET Core](https://github.com/dotnet/aspnetcore) | 内嵌文件服务器 | MIT |
+| [Photino.NET](https://github.com/tryphotino/photino.NET) | 桌面窗口框架 | Apache-2.0 |
+| [MinecraftLaunch](https://github.com/BlessedChild-333/MinecraftLaunch) | Minecraft 启动核心 | MIT |
+| [Vue](https://github.com/vuejs/core) | 前端框架 | MIT |
+| [Vite](https://github.com/vitejs/vite) | 前端构建工具 | MIT |
+| [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | CSS 框架 | MIT |
+| [TypeScript](https://github.com/microsoft/TypeScript) | 类型化 JavaScript | Apache-2.0 |
+| [pnpm](https://github.com/pnpm/pnpm) | 包管理器 | MIT |
+
 ## 许可证
 
 [GPL-3.0](LICENSE)
