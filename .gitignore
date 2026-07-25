@@ -21,6 +21,9 @@ Thumbs.db
 # Publish
 Release/
 
+# Todo
+todolist.txt
+
 # Vite cache
 UserInterface/vite.config.ts.timestamp-*.mjs
 
