@@ -1,6 +1,6 @@
 # Deci Launcher
 
-[English](README.md) | [中文](README.zh-CN.md)
+[English](README.md) | [简体中文](README.zh-CN.md)
 
 A cross-platform Minecraft Launcher built with C#/.NET 10 + Photino.NET + Vue 3.
 
@@ -61,7 +61,7 @@ dotnet publish -c Release -r win-x64
 | [.NET](https://github.com/dotnet/runtime) | Runtime & SDK | MIT |
 | [ASP.NET Core](https://github.com/dotnet/aspnetcore) | Embedded file server | MIT |
 | [Photino.NET](https://github.com/tryphotino/photino.NET) | Desktop windowing | Apache-2.0 |
-| [MinecraftLaunch](https://github.com/BlessedChild-333/MinecraftLaunch) | Minecraft launch core | MIT |
+| [MinecraftLaunch](https://github.com/Lunova-Studio/MinecraftLaunch) | Minecraft launch core | MIT |
 | [Vue](https://github.com/vuejs/core) | Frontend framework | MIT |
 | [Vite](https://github.com/vitejs/vite) | Frontend build tool | MIT |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | CSS framework | MIT |

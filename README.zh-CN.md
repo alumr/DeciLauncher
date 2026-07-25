@@ -1,6 +1,6 @@
 # Deci Launcher
 
-[English](README.md) | [中文](README.zh-CN.md)
+[English](README.md) | [简体中文](README.zh-CN.md)
 
 基于 C#/.NET 10 + Photino.NET + Vue 3 构建的跨平台 Minecraft 启动器。
 
@@ -61,7 +61,7 @@ dotnet publish -c Release -r win-x64
 | [.NET](https://github.com/dotnet/runtime) | 运行时和 SDK | MIT |
 | [ASP.NET Core](https://github.com/dotnet/aspnetcore) | 内嵌文件服务器 | MIT |
 | [Photino.NET](https://github.com/tryphotino/photino.NET) | 桌面窗口框架 | Apache-2.0 |
-| [MinecraftLaunch](https://github.com/BlessedChild-333/MinecraftLaunch) | Minecraft 启动核心 | MIT |
+| [MinecraftLaunch](https://github.com/Lunova-Studio/MinecraftLaunch) | Minecraft 启动核心 | MIT |
 | [Vue](https://github.com/vuejs/core) | 前端框架 | MIT |
 | [Vite](https://github.com/vitejs/vite) | 前端构建工具 | MIT |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | CSS 框架 | MIT |
