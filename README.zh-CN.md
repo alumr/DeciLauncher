@@ -1,5 +1,7 @@
 # Deci Launcher
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 基于 C#/.NET 10 + Photino.NET + Vue 3 构建的跨平台 Minecraft 启动器。
 
 ## 功能特性

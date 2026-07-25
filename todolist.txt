@@ -1,0 +1,42 @@
+DeciLauncher 改进待办事项
+==========================
+
+等级 1：立即执行（低成本、高收益）
+----------------------------------
+[ ] 1. BMCLAPI 镜像源 — Mojang 服务器国内极慢，接入 BMCLAPI CDN 加速下载
+[ ] 2. 原子写入配置 — SaveAccounts 写 .tmp → File.Replace → .bak 回退，防断电损坏
+[ ] 3. 离线 UUID 确定性 — MD5("OfflinePlayer:" + name) 确保同用户名→同 UUID，匹配原版 Minecraft
+[ ] 4. 内存滑块即时预览 — 拖动滑块时实时更新数值，不等到松手
+
+等级 2：短期执行（中等成本、显著提升体验）
+----------------------------------------
+[ ] 5. 版本图标系统 — 每种加载器配不同方块图标（原版/Forge/Fabric/Quilt/NeoForge），提升辨识度
+[ ] 6. 下载进度 UI — 启动时分阶段显示进度（下载资源→解压原生库→构建参数→启动…）
+[ ] 7. 崩溃分析 — 游戏崩溃时自动解析 crash-reports，识别 Java/显存/Mod 冲突/驱动问题，中文解释
+[ ] 8. 版本隔离 — 检测版本目录下 mods/saves 决定是否独立隔离，防止不同版本冲突
+[ ] 9. 加载器自动检测 — 解析 version.json 的 libraries 正则匹配加载器，不再依赖文件夹名
+[ ] 10. Java 版本校验 — 检测已选 Java 是否适用于目标 MC 版本（1.17+ 需 Java 17，1.20.5+ 需 Java 21）
+
+等级 3：长期规划（高投入、核心架构升级）
+--------------------------------------
+[ ] 11. 任务管线模式 — 启动流程各阶段用统一管线抽象，含进度权重、取消支持、错误回退
+[ ] 12. 多 .minecraft 目录 — 同时管理多个游戏来源（官方/PCL/自定义），UI 切换
+[ ] 13. Mod/整合包浏览器 — 内置 CurseForge + Modrinth API，浏览下载一站式
+[ ] 14. 配置模式版本化 — 配置文件带 $schema 版本号，遇未来版本只读而非崩溃
+[ ] 15. Authlib-Injector — 支持第三方 Yggdrasil 认证服务器（国内 Mod 服生态标配）
+[ ] 16. 仪表板首页 — 首页聚合系统资源、游戏时长、MC 动态，不再只有"启动游戏"按钮
+
+参考项目：
+  - HMCL (Hello Minecraft! Launcher) — https://github.com/HMCL-dev/HMCL
+  - PCL2-CE (Plain Craft Launcher 2) — https://github.com/PCL-Community/PCL-CE
+  - ProjBobcat (LauncherX 核心库) — https://github.com/Corona-Studio/ProjBobcat
+
+CI 发布打包
+----------
+[ ] 17. 应用图标 — 设计/制作 decilauncher.png（至少 256×256），Linux .desktop + macOS .app bundle 需要
+[ ] 18. Linux deb/rpm — CI ubuntu runner 上用 fpm 生成 .deb 和 .rpm 安装包
+[ ] 19. Linux AppImage — CI 上用 appimagetool 打包 AppDir → .AppImage 便携格式
+     需要文件：decilauncher.desktop, decilauncher.png, decilauncher.appdata.xml（AppStream）
+[ ] 20. macOS dmg — CI macos runner 上用 hdiutil 创建 .app bundle + DMG 安装镜像
+     需要文件：Info.plist, decilauncher.icns
+[ ] 21. CI 发布自动化 — tag 推送（v*）时自动构建所有平台包并创建 GitHub Release

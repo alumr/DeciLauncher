@@ -1,5 +1,7 @@
 # Deci Launcher
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 A cross-platform Minecraft Launcher built with C#/.NET 10 + Photino.NET + Vue 3.
 
 ## Features
