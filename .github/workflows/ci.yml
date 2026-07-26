@@ -49,18 +49,205 @@ jobs:
           - os: macos-latest
             rid: osx-arm64
     runs-on: ${{ matrix.os }}
+    env:
+      VERSION: 0.1.0-beta.1
+      PUBLISH_DIR: bin/Release/net10.0/${{ matrix.rid }}/publish
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           name: wwwroot
           path: Resources/wwwroot
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+
       - run: dotnet build -c Release
       - run: dotnet publish -c Release -r ${{ matrix.rid }}
+
+      # ===== Windows: zip =====
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "$env:PUBLISH_DIR/*" -DestinationPath "DeciLauncher-$env:VERSION-${{ matrix.rid }}.zip"
       - uses: actions/upload-artifact@v4
+        if: runner.os == 'Windows'
         with:
           name: DeciLauncher-${{ matrix.rid }}
-          path: bin/Release/net10.0/${{ matrix.rid }}/publish
+          path: DeciLauncher-*.zip
+
+      # ===== Linux: .deb =====
+      - name: Package Linux .deb
+        if: runner.os == 'Linux'
+        run: |
+          set -e
+          BIN="${{ env.PUBLISH_DIR }}/Deci Launcher"
+          DEB_VER=$(echo "${{ env.VERSION }}" | sed 's/-/~/g')
+          case "${{ matrix.rid }}" in
+            linux-x64) DEB_ARCH="amd64" ;;
+            linux-arm64) DEB_ARCH="arm64" ;;
+          esac
+
+          mkdir -p pkg/DEBIAN pkg/usr/bin pkg/usr/lib/decilauncher
+          mkdir -p pkg/usr/share/applications pkg/usr/share/icons/hicolor/256x256/apps
+          mkdir -p pkg/usr/share/metainfo
+
+          cp "$BIN" pkg/usr/lib/decilauncher/
+          printf '#!/bin/sh\nexec /usr/lib/decilauncher/Deci\\ Launcher "$@"\n' > pkg/usr/bin/decilauncher
+          chmod +x pkg/usr/bin/decilauncher
+          cp packaging/decilauncher.desktop pkg/usr/share/applications/
+          cp packaging/icon.png pkg/usr/share/icons/hicolor/256x256/apps/decilauncher.png
+          cp packaging/decilauncher.appdata.xml pkg/usr/share/metainfo/
+
+          cat > pkg/DEBIAN/control << EOF
+      Package: decilauncher
+      Version: ${DEB_VER}
+      Section: games
+      Priority: optional
+      Architecture: ${DEB_ARCH}
+      Maintainer: Tristan Jen
+      Depends: libwebkit2gtk-4.1-0, libgtk-3-0
+      Description: A cross-platform Minecraft Launcher.
+      Homepage: https://github.com/alumr/DeciLauncher
+      EOF
+
+          dpkg-deb --build pkg "DeciLauncher-${DEB_VER}-linux-${DEB_ARCH}.deb"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: DeciLauncher-${{ matrix.rid }}
+          path: DeciLauncher-*.deb
+
+      # ===== Linux: .rpm =====
+      - name: Package Linux .rpm
+        if: runner.os == 'Linux'
+        run: |
+          set -e
+          sudo apt-get update -qq && sudo apt-get install -y -qq rpm
+
+          BIN="${{ env.PUBLISH_DIR }}/Deci Launcher"
+          case "${{ matrix.rid }}" in
+            linux-x64) RPM_ARCH="x86_64" ;;
+            linux-arm64) RPM_ARCH="aarch64" ;;
+          esac
+
+          ROOT=$(mktemp -d)
+          mkdir -p "$ROOT/usr/bin" "$ROOT/usr/lib/decilauncher"
+          mkdir -p "$ROOT/usr/share/applications" "$ROOT/usr/share/icons/hicolor/256x256/apps"
+          mkdir -p "$ROOT/usr/share/metainfo"
+
+          cp "$BIN" "$ROOT/usr/lib/decilauncher/"
+          printf '#!/bin/sh\nexec /usr/lib/decilauncher/Deci\\ Launcher "$@"\n' > "$ROOT/usr/bin/decilauncher"
+          chmod +x "$ROOT/usr/bin/decilauncher"
+          cp packaging/decilauncher.desktop "$ROOT/usr/share/applications/"
+          cp packaging/icon.png "$ROOT/usr/share/icons/hicolor/256x256/apps/decilauncher.png"
+          cp packaging/decilauncher.appdata.xml "$ROOT/usr/share/metainfo/"
+
+          cat > package.spec << EOF
+      Name: decilauncher
+      Version: ${{ env.VERSION }}
+      Release: 1
+      Summary: A cross-platform Minecraft Launcher
+      License: GPL-3.0
+      Group: Amusements/Games
+
+      %description
+      A cross-platform Minecraft Launcher.
+
+      %install
+      cp -r %{_tmppath}/buildroot/usr %{buildroot}/
+
+      %files
+      /usr/bin/decilauncher
+      /usr/lib/decilauncher/
+      /usr/share/applications/decilauncher.desktop
+      /usr/share/icons/hicolor/256x256/apps/decilauncher.png
+      /usr/share/metainfo/decilauncher.appdata.xml
+      EOF
+
+          rpmbuild -bb package.spec \
+            --buildroot "$ROOT" \
+            --target "$RPM_ARCH" \
+            --define "_rpmdir $(pwd)" \
+            --define "_tmppath $ROOT/.."
+          mv "$RPM_ARCH"/*.rpm "DeciLauncher-${{ env.VERSION }}-linux-${RPM_ARCH}.rpm" 2>/dev/null || mv *.rpm "DeciLauncher-${{ env.VERSION }}-linux-${RPM_ARCH}.rpm"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: DeciLauncher-${{ matrix.rid }}
+          path: DeciLauncher-*.rpm
+
+      # ===== Linux: AppImage =====
+      - name: Package Linux AppImage
+        if: runner.os == 'Linux'
+        run: |
+          set -e
+          BIN="${{ env.PUBLISH_DIR }}/Deci Launcher"
+          case "${{ matrix.rid }}" in
+            linux-x64) ARCH="x86_64"; TOOL="appimagetool-x86_64.AppImage" ;;
+            linux-arm64) ARCH="aarch64"; TOOL="appimagetool-aarch64.AppImage" ;;
+          esac
+
+          mkdir -p AppDir/usr/bin
+          mkdir -p AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          mkdir -p AppDir/usr/share/metainfo
+
+          cp "$BIN" AppDir/usr/bin/decilauncher
+          cp packaging/decilauncher.desktop AppDir/usr/share/applications/
+          cp packaging/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/decilauncher.png
+          cp packaging/decilauncher.appdata.xml AppDir/usr/share/metainfo/
+          cp packaging/decilauncher.desktop AppDir/
+          cp packaging/icon.png AppDir/decilauncher.png
+          ln -s usr/bin/decilauncher AppDir/AppRun
+
+          wget -q "https://github.com/AppImage/appimagetool/releases/download/continuous/${TOOL}"
+          chmod +x "$TOOL"
+          "./$TOOL" --appimage-extract
+          ARCH="$ARCH" ./squashfs-root/AppRun AppDir "DeciLauncher-${{ env.VERSION }}-linux-${ARCH}.AppImage"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: DeciLauncher-${{ matrix.rid }}
+          path: DeciLauncher-*.AppImage
+
+      # ===== macOS: .app bundle =====
+      - name: Package macOS .app
+        if: runner.os == 'macOS'
+        run: |
+          set -e
+          BIN="${{ env.PUBLISH_DIR }}/Deci Launcher"
+          APP="DeciLauncher.app"
+          ICON="packaging/icon.png"
+
+          mkdir -p "${APP}/Contents/MacOS"
+          mkdir -p "${APP}/Contents/Resources"
+
+          cp "$BIN" "${APP}/Contents/MacOS/DeciLauncher"
+          cp packaging/Info.plist "${APP}/Contents/"
+          chmod +x "${APP}/Contents/MacOS/DeciLauncher"
+
+          mkdir MyIcon.iconset
+          sips -z 16 16   "$ICON" --out MyIcon.iconset/icon_16x16.png
+          sips -z 32 32   "$ICON" --out MyIcon.iconset/icon_16x16@2x.png
+          sips -z 32 32   "$ICON" --out MyIcon.iconset/icon_32x32.png
+          sips -z 64 64   "$ICON" --out MyIcon.iconset/icon_32x32@2x.png
+          sips -z 128 128 "$ICON" --out MyIcon.iconset/icon_128x128.png
+          sips -z 256 256 "$ICON" --out MyIcon.iconset/icon_128x128@2x.png
+          sips -z 256 256 "$ICON" --out MyIcon.iconset/icon_256x256.png
+          sips -z 512 512 "$ICON" --out MyIcon.iconset/icon_256x256@2x.png
+          sips -z 512 512 "$ICON" --out MyIcon.iconset/icon_512x512.png
+          sips -z 1024 1024 "$ICON" --out MyIcon.iconset/icon_512x512@2x.png
+          iconutil -c icns MyIcon.iconset
+          cp MyIcon.icns "${APP}/Contents/Resources/AppIcon.icns"
+
+          # Create .dmg
+          hdiutil create -volname "Deci Launcher" -srcfolder "$APP" -ov "DeciLauncher-${{ env.VERSION }}-${{ matrix.rid }}.dmg"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'macOS'
+        with:
+          name: DeciLauncher-${{ matrix.rid }}
+          path: DeciLauncher-*.dmg

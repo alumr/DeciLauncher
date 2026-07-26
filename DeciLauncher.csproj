@@ -52,6 +52,8 @@
         <Copyright>Decibyte © 2026</Copyright>
         <!-- 应用描述 -->
         <Description>A cross-platform Minecraft Launcher.</Description>
+        <!-- Windows 可执行文件图标 -->
+        <ApplicationIcon>packaging\icon.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>

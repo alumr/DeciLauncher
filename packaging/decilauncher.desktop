@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Deci Launcher
+Comment=A cross-platform Minecraft Launcher
+Icon=decilauncher
+Exec=decilauncher
+Categories=Game;
+Terminal=false
