@@ -4,7 +4,11 @@
   <name>Deci Launcher</name>
   <summary>A cross-platform Minecraft Launcher</summary>
   <description>
-    <p>A cross-platform Minecraft Launcher built with .NET and Vue.</p>
+    <p>
+      Deci Launcher is a modern, lightweight Minecraft launcher built with .NET and Vue.
+      It supports offline accounts, automatic Java runtime detection, and one-click game launching
+      across Windows, macOS, and Linux on both x86-64 and ARM64 architectures.
+    </p>
   </description>
   <url type="homepage">https://github.com/alumr/DeciLauncher</url>
   <metadata_license>CC0-1.0</metadata_license>

@@ -101,7 +101,7 @@ jobs:
           chmod +x pkg/usr/bin/decilauncher
           cp packaging/decilauncher.desktop pkg/usr/share/applications/
           cp packaging/icon.png pkg/usr/share/icons/hicolor/256x256/apps/decilauncher.png
-          cp packaging/decilauncher.appdata.xml pkg/usr/share/metainfo/
+          cp packaging/net.decibyte.decilauncher.metainfo.xml pkg/usr/share/metainfo/
 
           cat > pkg/DEBIAN/control << EOF
           Package: decilauncher
@@ -146,7 +146,7 @@ jobs:
           chmod +x "$ROOT/usr/bin/decilauncher"
           cp packaging/decilauncher.desktop "$ROOT/usr/share/applications/"
           cp packaging/icon.png "$ROOT/usr/share/icons/hicolor/256x256/apps/decilauncher.png"
-          cp packaging/decilauncher.appdata.xml "$ROOT/usr/share/metainfo/"
+          cp packaging/net.decibyte.decilauncher.metainfo.xml "$ROOT/usr/share/metainfo/"
 
           cat > package.spec << EOF
           Name: decilauncher
@@ -168,14 +168,14 @@ jobs:
           cp -a ${ROOT}/usr/lib/decilauncher/* %{buildroot}/usr/lib/decilauncher/
           cp -a ${ROOT}/usr/share/applications/decilauncher.desktop %{buildroot}/usr/share/applications/
           cp -a ${ROOT}/usr/share/icons/hicolor/256x256/apps/decilauncher.png %{buildroot}/usr/share/icons/hicolor/256x256/apps/
-          cp -a ${ROOT}/usr/share/metainfo/decilauncher.appdata.xml %{buildroot}/usr/share/metainfo/
+          cp -a ${ROOT}/usr/share/metainfo/net.decibyte.decilauncher.metainfo.xml %{buildroot}/usr/share/metainfo/
 
           %files
           /usr/bin/decilauncher
           /usr/lib/decilauncher/
           /usr/share/applications/decilauncher.desktop
           /usr/share/icons/hicolor/256x256/apps/decilauncher.png
-          /usr/share/metainfo/decilauncher.appdata.xml
+          /usr/share/metainfo/net.decibyte.decilauncher.metainfo.xml
           EOF
 
           rpmbuild -bb package.spec \
@@ -206,7 +206,7 @@ jobs:
           cp "$BIN" AppDir/usr/bin/decilauncher
           cp packaging/decilauncher.desktop AppDir/usr/share/applications/
           cp packaging/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/decilauncher.png
-          cp packaging/decilauncher.appdata.xml AppDir/usr/share/metainfo/
+          cp packaging/net.decibyte.decilauncher.metainfo.xml AppDir/usr/share/metainfo/
           cp packaging/decilauncher.desktop AppDir/
           cp packaging/icon.png AppDir/decilauncher.png
           ln -s usr/bin/decilauncher AppDir/AppRun
