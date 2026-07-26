@@ -31,17 +31,23 @@ jobs:
           path: Resources/wwwroot
 
   backend:
-    name: Backend (${{ matrix.os }})
+    name: Backend (${{ matrix.rid }})
     needs: frontend
     strategy:
       matrix:
         include:
           - os: windows-latest
             rid: win-x64
+          - os: windows-latest
+            rid: win-arm64
           - os: ubuntu-latest
             rid: linux-x64
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
           - os: macos-latest
             rid: osx-x64
+          - os: macos-latest
+            rid: osx-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
