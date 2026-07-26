@@ -154,13 +154,21 @@ jobs:
           Release: 1
           Summary: A cross-platform Minecraft Launcher
           License: GPL-3.0
-          Group: Amusements/Games
 
           %description
           A cross-platform Minecraft Launcher.
 
           %install
-          cp -r %{_tmppath}/buildroot/usr %{buildroot}/
+          mkdir -p %{buildroot}/usr/bin
+          mkdir -p %{buildroot}/usr/lib/decilauncher
+          mkdir -p %{buildroot}/usr/share/applications
+          mkdir -p %{buildroot}/usr/share/icons/hicolor/256x256/apps
+          mkdir -p %{buildroot}/usr/share/metainfo
+          cp -a ${ROOT}/usr/bin/decilauncher %{buildroot}/usr/bin/
+          cp -a ${ROOT}/usr/lib/decilauncher/* %{buildroot}/usr/lib/decilauncher/
+          cp -a ${ROOT}/usr/share/applications/decilauncher.desktop %{buildroot}/usr/share/applications/
+          cp -a ${ROOT}/usr/share/icons/hicolor/256x256/apps/decilauncher.png %{buildroot}/usr/share/icons/hicolor/256x256/apps/
+          cp -a ${ROOT}/usr/share/metainfo/decilauncher.appdata.xml %{buildroot}/usr/share/metainfo/
 
           %files
           /usr/bin/decilauncher
@@ -171,10 +179,8 @@ jobs:
           EOF
 
           rpmbuild -bb package.spec \
-            --buildroot "$ROOT" \
             --target "$RPM_ARCH" \
-            --define "_rpmdir $(pwd)" \
-            --define "_tmppath $ROOT/.."
+            --define "_rpmdir $(pwd)"
           mv "$RPM_ARCH"/*.rpm "DeciLauncher-${{ env.VERSION }}-linux-${RPM_ARCH}.rpm" 2>/dev/null || mv *.rpm "DeciLauncher-${{ env.VERSION }}-linux-${RPM_ARCH}.rpm"
       - uses: actions/upload-artifact@v4
         if: runner.os == 'Linux'
