@@ -104,16 +104,16 @@ jobs:
           cp packaging/decilauncher.appdata.xml pkg/usr/share/metainfo/
 
           cat > pkg/DEBIAN/control << EOF
-      Package: decilauncher
-      Version: ${DEB_VER}
-      Section: games
-      Priority: optional
-      Architecture: ${DEB_ARCH}
-      Maintainer: Tristan Jen
-      Depends: libwebkit2gtk-4.1-0, libgtk-3-0
-      Description: A cross-platform Minecraft Launcher.
-      Homepage: https://github.com/alumr/DeciLauncher
-      EOF
+          Package: decilauncher
+          Version: ${DEB_VER}
+          Section: games
+          Priority: optional
+          Architecture: ${DEB_ARCH}
+          Maintainer: Tristan Jen
+          Depends: libwebkit2gtk-4.1-0, libgtk-3-0
+          Description: A cross-platform Minecraft Launcher.
+          Homepage: https://github.com/alumr/DeciLauncher
+          EOF
 
           dpkg-deb --build pkg "DeciLauncher-${DEB_VER}-linux-${DEB_ARCH}.deb"
       - uses: actions/upload-artifact@v4
@@ -130,6 +130,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq rpm
 
           BIN="${{ env.PUBLISH_DIR }}/Deci Launcher"
+          RPM_VERSION=$(echo "${{ env.VERSION }}" | sed 's/-/./g')
           case "${{ matrix.rid }}" in
             linux-x64) RPM_ARCH="x86_64" ;;
             linux-arm64) RPM_ARCH="aarch64" ;;
@@ -148,26 +149,26 @@ jobs:
           cp packaging/decilauncher.appdata.xml "$ROOT/usr/share/metainfo/"
 
           cat > package.spec << EOF
-      Name: decilauncher
-      Version: ${{ env.VERSION }}
-      Release: 1
-      Summary: A cross-platform Minecraft Launcher
-      License: GPL-3.0
-      Group: Amusements/Games
+          Name: decilauncher
+          Version: ${RPM_VERSION}
+          Release: 1
+          Summary: A cross-platform Minecraft Launcher
+          License: GPL-3.0
+          Group: Amusements/Games
 
-      %description
-      A cross-platform Minecraft Launcher.
+          %description
+          A cross-platform Minecraft Launcher.
 
-      %install
-      cp -r %{_tmppath}/buildroot/usr %{buildroot}/
+          %install
+          cp -r %{_tmppath}/buildroot/usr %{buildroot}/
 
-      %files
-      /usr/bin/decilauncher
-      /usr/lib/decilauncher/
-      /usr/share/applications/decilauncher.desktop
-      /usr/share/icons/hicolor/256x256/apps/decilauncher.png
-      /usr/share/metainfo/decilauncher.appdata.xml
-      EOF
+          %files
+          /usr/bin/decilauncher
+          /usr/lib/decilauncher/
+          /usr/share/applications/decilauncher.desktop
+          /usr/share/icons/hicolor/256x256/apps/decilauncher.png
+          /usr/share/metainfo/decilauncher.appdata.xml
+          EOF
 
           rpmbuild -bb package.spec \
             --buildroot "$ROOT" \
